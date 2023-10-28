@@ -60,7 +60,7 @@
       this.p = [-3.0, -3.0];
       this.grad = 0;
       this.func = 0;
-      this.f=[null];
+      this.f=[];
     }
     // static grad;
     // static func;
@@ -69,7 +69,7 @@
     // static p = [-3.0, -3.0];
 
     test(){
-      let iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
+      let iter=this.davidonFletcherPowell(this.p,2,99,0.01,this.f);
       console.log("iter=%i, calls=%i+%i\n",iter,this.grad,this.func);
       console.log("p=%lG,%lG\n",this.p[0],this.p[1]);
     }
@@ -122,7 +122,7 @@
       let f1 = null;
       let yHy = 0.0;
       let yTs = 0.0;
-      let i, it, jt;
+      let i, it, jt, j;
       let a;
       let g = new Array(n * (n + 5)).fill(0);  
       let d = g.slice(0, n);
@@ -132,8 +132,11 @@
       let h= y.slice(0,n);
       let f2=this.prepareProblem(p);
       console.log("it=0, x" + p.map((value, i) => (i === 0 ? " = " : ", ") + value).join("") + ", f=" + f2);
-  this.gradOp(p, g);
+      this.gradOp(p, g);
   for (i = 0; i < n; i++) {
+    for (j = 0; j < n; j++) {
+      h[n*i+j]=0.;
+    }
     h[n * i + i] = 1;
     d[i] = -g[i];
   }
@@ -147,7 +150,13 @@
       if (f2 < f[0]) {
         break;
       }
-      a = jt === 0 ? 2 : (jt % 2 ? -a : -a * 2);
+      if(jt === 0){
+        a = 2;
+      }else if(jt%2){
+        a = -a;
+      }else{
+        a = -a * 2;
+      }
     }
     console.log("it=" + it + ", x" + p.map((value, i) => (i === 0 ? " = " : ", ") + value).join("") + ", f=" + f2);
     f1 = f[0];
@@ -155,22 +164,34 @@
     if (2 * Math.abs(f1 - f2) <= epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon)) {
       break;
     }
-    y = g.slice(); // Clone 'g' to 'y'
+    y = Array.from(g); // Clone 'g' to 'y'
     this.gradOp(p, g);
     for (i = 0; i < n; i++) {
       y[i] = g[i] - y[i];
-      yTs += y[i] * s[i]; 
-      yHy += y[i] * q[i];
     }
-    this.mult(h, y, q, n, n, 1);
+    // this.mult(h, y, q, n, n, 1);
     //this.mult(y,s,yTs,1,n,1);
     //this.mult(y,q,yHy,1,n,1);
     for (i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
+      q[i]=0;
+      for (j = 0; j < n; j++) {
+        q[i] += h[n*i+j]*y[j];
+      }
+    }
+    yHy = 0.0;
+    yTs = 0.0;
+    for (i = 0; i < n; i++) {
+      yTs += y[i] * s[i]; 
+      yHy += y[i] * q[i];
+    }
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < n; j++) {
         h[n * i + j] += -q[i] * q[j] / yHy + s[i] * s[j] / yTs;
       }
+    }
+    for (i = 0; i < n; i++) {
       d[i] = 0;
-      for (let j = 0; j < n; j++) {
+      for (j = 0; j < n; j++) {
         d[i] -= h[n * i + j] * g[j];
       }
     }
