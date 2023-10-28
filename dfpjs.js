@@ -69,7 +69,7 @@
     // static p = [-3.0, -3.0];
 
     test(){
-      iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
+      let iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
       console.log("iter=%i, calls=%i+%i\n",iter,this.grad,this.func);
       console.log("p=%lG,%lG\n",this.p[0],this.p[1]);
     }
@@ -120,8 +120,8 @@
       // let i,it,j,jt;
       //double
       let f1 = null;
-      let yHy = 0.1;
-      let yTs = 0.1;
+      let yHy = 0.0;
+      let yTs = 0.0;
       let i, it, jt;
       let a;
       let g = new Array(n * (n + 5)).fill(0);  
@@ -159,10 +159,12 @@
     this.gradOp(p, g);
     for (i = 0; i < n; i++) {
       y[i] = g[i] - y[i];
+      yTs += y[i] * s[i]; 
+      yHy += y[i] * q[i];
     }
     this.mult(h, y, q, n, n, 1);
-    this.mult(y,s,yTs,1,n,1);
-    this.mult(y,q,yHy,1,n,1);
+    //this.mult(y,s,yTs,1,n,1);
+    //this.mult(y,q,yHy,1,n,1);
     for (i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         h[n * i + j] += -q[i] * q[j] / yHy + s[i] * s[j] / yTs;
