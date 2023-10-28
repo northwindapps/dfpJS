@@ -7,7 +7,7 @@
     }
 
     test(){
-      let iter=this.davidonFletcherPowell(this.p,2,9999,0.00001,this.f);
+      let iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
       console.log("iter=%i, calls=%i+%i\n",iter,this.grad,this.func);
       console.log("p=%lG,%lG\n",this.p[0],this.p[1]);
     }
@@ -18,7 +18,7 @@
       return x*x;
     }
 
-    prepareProblem(){
+    funcOp(){
       //input double p
       //output double
       this.func++;
@@ -53,14 +53,10 @@
         
     davidonFletcherPowell(p,n,itmax,epsilon,f)
     {
-      //return int
-      //int
-      // let i,it,j,jt;
-      //double
       let f1 = null;
       let f2 = null;
-      let yHy = 0.0;
-      let yTs = 0.0;
+      let yHy = [];
+      let yTs = [];
       let i, it, jt, j;
       let a;
       let g = new Array(n * (n + 5)).fill(0);  
@@ -70,7 +66,7 @@
       let y= s.slice(0,n);
       let h= y.slice(0,n);
       console.log("it=0, x" + p.map((value, i) => (i === 0 ? " = " : ", ") + value).join("") + ", f=" + f2);
-      f2=this.prepareProblem(p);
+      f2=this.funcOp(p);
       this.gradOp(p, g);
       for (i = 0; i < n; i++) {
         for (j = 0; j < n; j++) {
@@ -85,7 +81,7 @@
           for (i = 0; i < n; i++) {
             s[i] = p[i] + d[i] / a;
           }
-          f2 = this.prepareProblem(s);
+          f2 = this.funcOp(s);
           if (f2 < f[0]) {
             break;
           }
@@ -114,24 +110,26 @@
         for (i = 0; i < n; i++) {
           y[i] = g[i] - y[i];
         }
-        // this.mult(h, y, q, n, n, 1);
-        //this.mult(y,s,yTs,1,n,1);
-        //this.mult(y,q,yHy,1,n,1);
         for (i = 0; i < n; i++) {
           q[i]=0;
           for (j = 0; j < n; j++) {
             q[i] += h[n*i+j]*y[j];
           }
         }
-        yHy = 0.0;
-        yTs = 0.0;
-        for (i = 0; i < n; i++) {
-          yTs += y[i] * s[i]; 
-          yHy += y[i] * q[i];
-        }
+        yHy = [];
+        yTs = [];
+        // yHy = 0.0;
+        // yTs = 0.0;
+        // for (i = 0; i < n; i++) {
+        //   yTs += y[i] * s[i]; 
+        //   yHy += y[i] * q[i];
+        // }
+        this.mult(h,y,q,n,n,1);
+        this.mult(y,s,yTs,1,n,1);
+        this.mult(y,q,yHy,1,n,1);
         for (i = 0; i < n; i++) {
           for (j = 0; j < n; j++) {
-            h[n * i + j] += -q[i] * q[j] / yHy + s[i] * s[j] / yTs;
+            h[n * i + j] += -q[i] * q[j] / yHy[0] + s[i] * s[j] / yTs[0];
           }
         }
         for (i = 0; i < n; i++) {
@@ -146,6 +144,18 @@
       }
       return it;
     }
+
+    mult(u, v, w, l, m, n) {
+      for (let i = 0; i < l; i++) {
+        for (let j = 0; j < n; j++) {
+          w[n * i + j] = 0;
+          for (let k = 0; k < m; k++) {
+            w[n * i + j] += u[m * i + k] * v[n * k + j];
+          }
+        }
+      }
+    }
+    
   }
 
 let instance = new dfp();
