@@ -7,7 +7,7 @@
     }
 
     test(){
-      let iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
+      let iter=this.davidonFletcherPowell(this.p,2,9999,0.00001,this.f);
       console.log("iter=%i, calls=%i+%i\n",iter,this.grad,this.func);
       console.log("p=%lG,%lG\n",this.p[0],this.p[1]);
     }
@@ -15,22 +15,22 @@
     sq(x){
       //input double x
       //return double
-      return(x*x);
+      return x*x;
     }
 
     prepareProblem(){
       //input double p
       //output double
       this.func++;
-      return((Math.cosh(this.p[0]-0.5)+this.sq(this.p[1]-0.5))/8.);//this is z. our problem here to solve.
+      return (Math.cosh(this.p[0]-0.5)+this.sq(this.p[1]-0.5))/8.0;//this is z. our problem here to solve.
     }
 
     gradOp(p,g)
     {
       //input doulbe p, g
       this.grad++;
-      g[0]=Math.sinh(p[0]-0.5)/8.;
-      g[1]=(2.*p[1]-1.)/8.;
+      g[0]=Math.sinh(p[0]-0.5)/8.0;
+      g[1]=(2.0*p[1]-1.0)/8.0;
     }
 
     
@@ -69,8 +69,8 @@
       let s= q.slice(0,n);
       let y= s.slice(0,n);
       let h= y.slice(0,n);
-      f2=this.prepareProblem(p);
       console.log("it=0, x" + p.map((value, i) => (i === 0 ? " = " : ", ") + value).join("") + ", f=" + f2);
+      f2=this.prepareProblem(p);
       this.gradOp(p, g);
       for (i = 0; i < n; i++) {
         for (j = 0; j < n; j++) {
@@ -104,8 +104,8 @@
         }
         f1 = f[0];
         f[0] = f2;
-        console.log(2 * Math.abs(f1 - f2) );
-        console.log(epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon));
+        // console.log(2 * Math.abs(f1 - f2) );
+        // console.log(epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon));
         if (2 * Math.abs(f1 - f2) <= epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon)) {
           break;
         }
