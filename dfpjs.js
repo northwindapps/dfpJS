@@ -2,8 +2,8 @@
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <float.h>
-// #define _USE_MATH_DEFINES
-// #include <math.h>
+// #define _USE_Math_DEFINES
+// #include <Math.h>
 
 
 
@@ -15,26 +15,26 @@
 //   double p[2];
 //   FILE*fp;
 //   fp=fopen(fname,"wt");
-//   fprintf(fp,"%i\n",nx);
+//   fconsole.log(fp,"%i\n",nx);
 //   for(x=0;x<nx;x++)
 //     {
 //     p[0]=-4.+x*8./(nx-1);
-//     fprintf(fp,"%lG\n",p[0]);
+//     fconsole.log(fp,"%lG\n",p[0]);
 //     }
-//   fprintf(fp,"%i\n",ny);
+//   fconsole.log(fp,"%i\n",ny);
 //   for(y=0;y<ny;y++)
 //     {
 //     p[1]=-4.+y*8./(ny-1);
-//     fprintf(fp,"%lG\n",p[1]);
+//     fconsole.log(fp,"%lG\n",p[1]);
 //     }
-//   fprintf(fp,"%i\n",nx*ny);
+//   fconsole.log(fp,"%i\n",nx*ny);
 //   for(y=0;y<ny;y++)
 //     {
 //     p[1]=-4.+y*8./(ny-1);
 //     for(x=0;x<nx;x++)
 //       {
 //       p[0]=-4.+x*8./(nx-1);
-//       fprintf(fp,"%lG\n",prepareProblem(p));
+//       fconsole.log(fp,"%lG\n",prepareProblem(p));
 //       }
 //     }
 //   fclose(fp);
@@ -46,19 +46,33 @@
 //   static double f,p[2];
 //   p[0]=p[1]=-3.;
 //   iter=DavidonFletcherPowell(p,2,99,0.00001,&f);
-//   printf("iter=%i, calls=%i+%i\n",iter,calls.grad,calls.func);
-//   printf("p=%lG,%lG\n",p[0],p[1]);
-//   printf("f=%lG\n",f);
-//   // ResidualSurface("dfp.tb2");
+//   console.log("iter=%i, calls=%i+%i\n",iter,calls.grad,calls.func);
+//   console.log("p=%lG,%lG\n",p[0],p[1]);
+//   console.log("f=%lG\n",f);
+//   // ResidualSurface("this.tb2");
 //   return(0);
 //   }
 
+
+
   class dfp{
-    static grad;
-    static func;
-    static iter;
-    static f;
-    static p=[-3.0,-3.0];
+    constructor() {
+      this.p = [-3.0, -3.0];
+      this.grad = 0;
+      this.func = 0;
+      this.f=0.0;
+    }
+    // static grad;
+    // static func;
+    // static iter;
+    // static f;
+    // static p = [-3.0, -3.0];
+
+    test(){
+      iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
+      console.log("iter=%i, calls=%i+%i\n",iter,this.grad,this.func);
+      console.log("p=%lG,%lG\n",this.p[0],this.p[1]);
+    }
 
     sq(x){
       //input double x
@@ -66,18 +80,18 @@
       return(x*x);
     }
 
-    prepareProblem(p){
+    prepareProblem(){
       //input double p
       //output double
       this.func++;
-      return((math.cosh(p[0]-0.5)+this.sq(p[1]-0.5))/8.);//this is z. our problem here to solve.
+      return((Math.cosh(this.p[0]-0.5)+this.sq(this.p[1]-0.5))/8.);//this is z. our problem here to solve.
     }
 
-    grad(p,g)
+    gradOp(p,g)
     {
       //input doulbe p, g
       this.grad++;
-      g[0]=sinh(p[0]-0.5)/8.;
+      g[0]=Math.sinh(p[0]-0.5)/8.;
       g[1]=(2.*p[1]-1.)/8.;
     }
 
@@ -87,48 +101,48 @@
     {
       //input double u, v,w
       //input int l,m,n
-      let i,j,k;
-      for(i=0;i<l;i++){
-        for(j=0;j<n;j++){
-          for(w[n*i+j]=k=0;k<m;k++){
-            w[n*i+j]+=u[m*i+k]*v[n*k+j];
-          }
+      for (let i = 0; i < l; i++) {
+        for (let j = 0; j < n; j++) {
+            w[n * i + j] = 0;
+            for (let k = 0; k < m; k++) {
+                w[n * i + j] += u[m * i + k] * v[n * k + j];
+            }
         }
-      }    
+      }
     }
 
         
-    DavidonFletcherPowell(p,n,itmax,epsilon,f)
+    davidonFletcherPowell(p,n,itmax,epsilon,f)
     {
       //return int
       //int
-      let i,it,j,jt;
+      // let i,it,j,jt;
       //double
-      let a,f1,f2,d,g,h,q,s,y,yHy,yTs;
-      g=array();
-      d=g+n;
-      q=d+n;
-      s=q+n;
-      y=s+n;
-      h=y+n;
-      f2=this.prepareProblem(p);
-      printf("it=0, x");
-      for(i=0;i<n;i++){
-        printf("%s%lG",i?",":"=",p[i]);
+      let a,f1,yHy,yTs;
+      let g = new Array(n * (n + 5)).fill(0);  
+      let d = g.slice(0, n);
+      let q= d.slice(0,n);
+      let s= q.slice(0,n);
+      let y= s.slice(0,n);
+      let h= y.slice(0,n);
+      let f2=this.prepareProblem(p);
+      console.log("it=0, x");
+      for(let i=0;i<n;i++){
+        console.log("%s%lG",i?",":"=",p[i]);
       }
-      printf(", f=%lG\n",f2);
-      grad(p,g);
-      for(i=0;i<n;i++){
-        for(j=0;j<n;j++){
+      console.log(", f=%lG\n",f2);
+      this.gradOp(p,g);
+      for(let i=0;i<n;i++){
+        for(let j=0;j<n;j++){
           h[n*i+j]=0.;
           h[n*i+i]=1.;
           d[i]=-g[i];
         }
       }
-      for(it=1;it<=itmax;it++){
+      for(let it=1;it<=itmax;it++){
           a=1.;
-          for(jt=0;jt<32;jt++){
-            for(i=0;i<n;i++){
+          for(let jt=0;jt<32;jt++){
+            for(let i=0;i<n;i++){
               s[i]=p[i]+d[i]/a;
             }
             f2=this.prepareProblem(s);
@@ -141,36 +155,37 @@
             else
               a=-a*2.;
           }
-          printf("it=%i, x",it);
-          for(i=0;i<n;i++){
+          console.log("it=%i, x",it);
+          for(let i=0;i<n;i++){
             s[i]=d[i]/a;
             p[i]+=s[i];
-            printf("%s%lG",i?",":"=",p[i]);
+            console.log("%s%lG",i?",":"=",p[i]);
           }
           f1=f;
           f=f2;
-          printf(", f=%lG\n",f2);
-          if(2.*math.abs(f1-f2)<=epsilon*(math.abs(f1)+math.abs(f2)+epsilon)){
+          console.log(", f=%lG\n",f2);
+          if(2.*Math.abs(f1-f2)<=epsilon*(Math.abs(f1)+Math.abs(f2)+epsilon)){
             break;
           }
-          for(i=0;i<n;i++){
+          for(let i=0;i<n;i++){
             y[i]=g[i];
           }
-          this.grad(p,g);
-          for(i=0;i<n;i++){
-            y[i]=g[i]-y[i];
-            this.mult(h,y,q,n,n,1);
-            this.mult(y,s,yTs,1,n,1);
-            this.mult(y,q,yHy,1,n,1);
+          this.gradOp(p,g);
+          for (let i = 0; i < n; i++) {
+            y[i] = g[i] - y[i];
           }
-          for(i=0;i<n;i++){
-            for(j=0;j<n;j++){
+          this.mult(h, y, q, n, n, 1);
+          this.mult(y, s, f => (yTs = f), 1, n, 1);
+          this.mult(y, q, f => (yHy = f), 1, n, 1);
+          for(let i=0;i<n;i++){
+            for(let j=0;j<n;j++){
               h[n*i+j]+=-q[i]*q[j]/yHy+s[i]*s[j]/yTs;
             }
           }
-          for(i=0;i<n;i++){
-            for(d[i]=j=0;j<n;j++){
-              d[i]-=h[n*i+j]*g[j];
+          for (let i = 0; i < n; i++) {
+            d[i] = 0;
+            for (let j = 0; j < n; j++) {
+                d[i] -= h[n * i + j] * g[j];
             }
           }
         }
@@ -181,3 +196,6 @@
         return it;
     }
 }
+
+let instance = new dfp();
+instance.test();
