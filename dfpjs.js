@@ -60,7 +60,7 @@
       this.p = [-3.0, -3.0];
       this.grad = 0;
       this.func = 0;
-      this.f=0.0;
+      this.f=[null];
     }
     // static grad;
     // static func;
@@ -103,12 +103,13 @@
       //input int l,m,n
       for (let i = 0; i < l; i++) {
         for (let j = 0; j < n; j++) {
-            w[n * i + j] = 0;
-            for (let k = 0; k < m; k++) {
-                w[n * i + j] += u[m * i + k] * v[n * k + j];
-            }
+          w[n * i + j] = 0;
+          for (let k = 0; k < m; k++) {
+            w[n * i + j] += u[m * i + k] * v[n * k + j];
+          }
         }
       }
+      
     }
 
         
@@ -118,7 +119,11 @@
       //int
       // let i,it,j,jt;
       //double
-      let a,f1,yHy,yTs;
+      let f1 = null;
+      let yHy = 0.1;
+      let yTs = 0.1;
+      let i, it, jt;
+      let a;
       let g = new Array(n * (n + 5)).fill(0);  
       let d = g.slice(0, n);
       let q= d.slice(0,n);
@@ -126,76 +131,54 @@
       let y= s.slice(0,n);
       let h= y.slice(0,n);
       let f2=this.prepareProblem(p);
-      console.log("it=0, x");
-      for(let i=0;i<n;i++){
-        console.log("%s%lG",i?",":"=",p[i]);
+      console.log("it=0, x" + p.map((value, i) => (i === 0 ? " = " : ", ") + value).join("") + ", f=" + f2);
+  this.gradOp(p, g);
+  for (i = 0; i < n; i++) {
+    h[n * i + i] = 1;
+    d[i] = -g[i];
+  }
+  for (it = 1; it <= itmax; it++) {
+    a = 1;
+    for (jt = 0; jt < 32; jt++) {
+      for (i = 0; i < n; i++) {
+        s[i] = p[i] + d[i] / a;
       }
-      console.log(", f=%lG\n",f2);
-      this.gradOp(p,g);
-      for(let i=0;i<n;i++){
-        for(let j=0;j<n;j++){
-          h[n*i+j]=0.;
-          h[n*i+i]=1.;
-          d[i]=-g[i];
-        }
+      f2 = this.prepareProblem(s);
+      if (f2 < f[0]) {
+        break;
       }
-      for(let it=1;it<=itmax;it++){
-          a=1.;
-          for(let jt=0;jt<32;jt++){
-            for(let i=0;i<n;i++){
-              s[i]=p[i]+d[i]/a;
-            }
-            f2=this.prepareProblem(s);
-            if(f2<f)
-              break;
-            if(jt==0)
-              a=2.;
-            else if(jt%2)
-              a=-a;
-            else
-              a=-a*2.;
-          }
-          console.log("it=%i, x",it);
-          for(let i=0;i<n;i++){
-            s[i]=d[i]/a;
-            p[i]+=s[i];
-            console.log("%s%lG",i?",":"=",p[i]);
-          }
-          f1=f;
-          f=f2;
-          console.log(", f=%lG\n",f2);
-          if(2.*Math.abs(f1-f2)<=epsilon*(Math.abs(f1)+Math.abs(f2)+epsilon)){
-            break;
-          }
-          for(let i=0;i<n;i++){
-            y[i]=g[i];
-          }
-          this.gradOp(p,g);
-          for (let i = 0; i < n; i++) {
-            y[i] = g[i] - y[i];
-          }
-          this.mult(h, y, q, n, n, 1);
-          this.mult(y, s, f => (yTs = f), 1, n, 1);
-          this.mult(y, q, f => (yHy = f), 1, n, 1);
-          for(let i=0;i<n;i++){
-            for(let j=0;j<n;j++){
-              h[n*i+j]+=-q[i]*q[j]/yHy+s[i]*s[j]/yTs;
-            }
-          }
-          for (let i = 0; i < n; i++) {
-            d[i] = 0;
-            for (let j = 0; j < n; j++) {
-                d[i] -= h[n * i + j] * g[j];
-            }
-          }
-        }
-      
-        if(it > itmax){
-          return(-it);
-        }
-        return it;
+      a = jt === 0 ? 2 : (jt % 2 ? -a : -a * 2);
     }
+    console.log("it=" + it + ", x" + p.map((value, i) => (i === 0 ? " = " : ", ") + value).join("") + ", f=" + f2);
+    f1 = f[0];
+    f[0] = f2;
+    if (2 * Math.abs(f1 - f2) <= epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon)) {
+      break;
+    }
+    y = g.slice(); // Clone 'g' to 'y'
+    this.gradOp(p, g);
+    for (i = 0; i < n; i++) {
+      y[i] = g[i] - y[i];
+    }
+    this.mult(h, y, q, n, n, 1);
+    this.mult(y,s,yTs,1,n,1);
+    this.mult(y,q,yHy,1,n,1);
+    for (i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        h[n * i + j] += -q[i] * q[j] / yHy + s[i] * s[j] / yTs;
+      }
+      d[i] = 0;
+      for (let j = 0; j < n; j++) {
+        d[i] -= h[n * i + j] * g[j];
+      }
+    }
+  }
+  if (it > itmax) {
+    return -it;
+  }
+  return it;
 }
+  }
 
 let instance = new dfp();
 instance.test();
