@@ -3,11 +3,11 @@
       this.p = [-3.0, -3.0];
       this.grad = 0;
       this.func = 0;
-      this.f=[];
+      this.f=[0.0];
     }
 
     test(){
-      let iter=this.davidonFletcherPowell(this.p,2,5,0.00001,this.f);
+      let iter=this.davidonFletcherPowell(this.p,2,99,0.00001,this.f);
       console.log("iter=%i, calls=%i+%i\n",iter,this.grad,this.func);
       console.log("p=%lG,%lG\n",this.p[0],this.p[1]);
     }
@@ -18,11 +18,17 @@
       return x*x;
     }
 
-    funcOp(){
-      //input double p
+    funcOp(s){
+      //input double array s
       //output double
       this.func++;
-      return (Math.cosh(this.p[0]-0.5)+this.sq(this.p[1]-0.5))/8.0;//this is z. our problem here to solve.
+      return (Math.cosh(s[0]-0.5)+this.sq(s[1]-0.5))/8.0;//this is z. our problem here to solve.
+    }
+
+    funcOpTest(s){
+      //input double array s
+      //output double
+      return (Math.cosh(s[0]-0.5)+this.sq(s[1]-0.5))/8.0;//this is z. our problem here to solve.
     }
 
     gradOp(p,g)
@@ -31,7 +37,8 @@
       this.grad++;
       g[0]=Math.sinh(p[0]-0.5)/8.0;
       g[1]=(2.0*p[1]-1.0)/8.0;
-      console.log("g",g);
+      console.log("g[0]",g[0]);
+      console.log("g[1]",g[1]);
     }
 
     
@@ -148,11 +155,15 @@
       s = q.slice(n);
       y = s.slice(n);
       h = y.slice(n);
+      console.log("L152_y_0", y);//ng
     
       f2 = this.funcOp(p); // You need to define 'func' function
     
       console.log("it=0, x" + p.map((value, index) => (index ? ", " : "=") + value).join("") + ", f=" + f2);
-    
+      for (i = 0; i < n; i++) {
+
+      }
+      
       this.gradOp(p, g); // You need to define 'grad' function
     
       for (i = 0; i < n; i++) {
@@ -164,15 +175,17 @@
       }
     
       for (it = 1; it <= itmax; it++) {
-        a = 1;
+        a = 1.0;
+        console.log("p_start_" + it, p);
     
         for (jt = 0; jt < 32; jt++) {
           for (i = 0; i < n; i++) {
             s[i] = p[i] + d[i] / a;
+            console.log("L179_s_" + i + '_' + it, s[i]);//ok
           }
-    
-          f2 = this.funcOp(s); // You need to define 'func' function
-    
+          
+          f2 = this.funcOp(s); 
+          console.log("f2_" + it ,f2);//ok
           if (f2 < f[0]) {
             break;
           }
@@ -191,45 +204,65 @@
         for (i = 0; i < n; i++) {
           s[i] = d[i] / a;
           p[i] += s[i];
+          console.log('p{'+i+'}',p[i]);
         }
-    
+        //ok
         f1 = f[0];
         f[0] = f2;
     
-        console.log(", f=" + f2);
+        console.log("L204",2 * Math.abs(f1 - f2));
+        console.log("L204",epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon));
+        console.log("L204f1",f1);
+        console.log("L204f2",f2);//ok
     
         if (2 * Math.abs(f1 - f2) <= epsilon * (Math.abs(f1) + Math.abs(f2) + epsilon)) {
           break;
         }
     
+        console.log("L214y",y);
+        console.log("L215g",g);
         for (i = 0; i < n; i++) {
           y[i] = g[i];
         }
+        console.log("L219y",y);//ok
+        
     
         this.gradOp(p, g); // You need to define 'grad' function
-    
+
         for (i = 0; i < n; i++) {
           y[i] = g[i] - y[i];
         }
+        
+
+      
     
         this.mult(h, y, q, n, n, 1); // You need to define 'mult' function
         this.mult(y, s, yTs, 1, n, 1); // Assuming yTs is a scalar value
         this.mult(y, q, yHy, 1, n, 1); // Assuming yHy is a scalar value
-    
+        console.log("L234y",y);//ok
+        console.log("L235yTs",yTs);//ok?
+
+
+       
         for (i = 0; i < n; i++) {
           for (j = 0; j < n; j++) {
             h[n * i + j] += -q[i] * q[j] / yHy + s[i] * s[j] / yTs;
           }
         }
+        console.log("L244h",h);//ok
     
-        for (i = 0; i < n; i++) {
-          for (j = 0; j < n; j++) {
+        for (let i = 0; i < n; i++) {
+          d[i] = 0;
+          for (let j = 0; j < n; j++) {
             d[i] -= h[n * i + j] * g[j];
           }
-        }
+        }        
+        console.log("L251d",d);//ng
+
+
       }
-    
-      // No need to free memory in JavaScript
+
+      g = null;
     
       if (it > itmax) {
         return -it;
@@ -252,3 +285,6 @@
 
 let instance = new dfp();
 instance.test();
+let s = [-1.887191208760259,-1.745127713925089];
+let r = instance.funcOpTest(s);
+console.log(r);
