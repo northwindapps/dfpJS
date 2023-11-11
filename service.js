@@ -45,6 +45,12 @@ class Service {
         }
         return input;
     }
+
+    replace_expression(source){
+        let input = source;
+        input = input.replace(/(\d+)\(/g, '$1*(');
+        return input;
+    }
     
     num_check(source){
         var regex = /[^-0123456789.]/g;
@@ -199,7 +205,10 @@ class Service {
     }
     
     isFloat(str) {
-        return /^-?\d+(\.\d+)?$/.test(str);
+        // Regular expression to match a float with e-notation
+        var floatRegex = /^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/;
+        // Test the input string against the regular expression
+        return floatRegex.test(str);
     }  
 
     areAllFloats(item) {
@@ -221,6 +230,7 @@ class Service {
         input = input.replaceAll("+" , " + ");
         input = input.replaceAll("/" , " / ");
         input = input.replaceAll("-" , " -");
+        input = input.replaceAll("e -" , "e-");
         input = input.replaceAll("*" , " * ");
         input = input.replaceAll("^" , " ^ ");
 
@@ -245,8 +255,13 @@ class Service {
                         let a = new Decimal(elements[i-1]);
                         let b = new Decimal(elements[i]);
                         let resultvalue = a.plus(b);
-                        elements[i] = resultvalue.toString();
-                        elements[i-1] = "nil";
+                        if (/e/.test(resultvalue)) {
+                            elements[i-1] = resultvalue.toString();
+                            elements[i] = "+";
+                        }else{
+                            elements[i] = resultvalue.toString();
+                            elements[i-1] = "nil";
+                        }
                     }
                 }
             }
@@ -262,10 +277,16 @@ class Service {
                     if (elements[i] == "^" &&  typeof elements[i-1] !== "undefined" && this.isFloat(elements[i-1]) && typeof elements[i+1] !== "undefined" && this.isFloat(elements[i+1])) {                    
                         let a = new Decimal(elements[i-1]);
                         let b = new Decimal(elements[i+1]);
-                        var c =  a.pow(b);
-                        elements[i+1] = "+";
-                        elements[i-1] = "nil";
-                        elements[i] = c.toString();                
+                        if (a.toString === '0') {
+                            elements[i+1] = "+";
+                            elements[i-1] = "nil";
+                            elements[i] = '0';   
+                        }else{
+                            var c =  a.pow(b);
+                            elements[i+1] = "+";
+                            elements[i-1] = "nil";
+                            elements[i] = c.toString();
+                        }                
                     }
                 }
             }else{
@@ -331,7 +352,8 @@ class Service {
         
         //PREPARATION
         tempStr = this.replace_constant(tempStr);
-        
+        tempStr = this.replace_expression(tempStr);
+
         //Comma Free
         tempStr = tempStr.replaceAll(",", "");    
         if(!tempStr.includes("(")){
