@@ -227,6 +227,7 @@ class Service {
         var resultvalue = new Decimal("0.0");
         var input = source;
         input = input.replaceAll("--" , "+");
+        input = input.replaceAll("++" , "+");
         input = input.replaceAll("+" , " + ");
         input = input.replaceAll("/" , " / ");
         input = input.replaceAll("-" , " -");
