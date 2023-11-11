@@ -70,13 +70,8 @@
       y = s.slice(n);
       h = y.slice(n);
       f2 = this.funcOp(p); // You need to define 'func' function
-    
       console.log("it=0, x" + p.map((value, index) => (index ? ", " : "=") + value).join("") + ", f=" + f2);
-      for (i = 0; i < n; i++) {
-
-      }
-      
-      this.gradOp(p, g); // You need to define 'grad' function
+      this.gradOp(p, g); // You neednode  to define 'grad' function
     
       for (i = 0; i < n; i++) {
         for (j = 0; j < n; j++) {
