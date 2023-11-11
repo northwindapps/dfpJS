@@ -263,9 +263,9 @@ class Service {
                         let a = new Decimal(elements[i-1]);
                         let b = new Decimal(elements[i+1]);
                         var c =  a.pow(b);
-                        elements[i+1] = c.toString();
+                        elements[i+1] = "+";
                         elements[i-1] = "nil";
-                        elements[i] = "nil";                
+                        elements[i] = c.toString();                
                     }
                 }
             }else{
