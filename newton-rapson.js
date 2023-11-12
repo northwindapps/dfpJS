@@ -12,19 +12,25 @@ class NewtonRapson{
         let iter = 0;
         let isLoop = true;
         let y = fx;
+        //it stinks.check it again.
         let dydx = differentiate.execute(fx);
+        dydx = '0.027744795x^4+0.031352748x^3-0.0514575x^2-0.198182376x+0.204906823';
+        console.log('dydx',dydx);
         while (isLoop) {
             // While True
             let xset = dydx.replace(/x/g, '(' + String(x) + ')');
             let dydxValue = service.excecute(xset);
+            console.log('x',x);
+            console.log('dydxValue',dydxValue);
             let xsetY = y.replace(/x/g, '(' + String(x) + ')');
             let yValue = service.excecute(xsetY);
             if (Math.abs(yValue - targetY) <= convergence) {
                 isLoop = false;
             }
-            x = x - (targetY - yValue) /dydxValue;
-            console.log(x + '- (' + targetY + ' - ' + yValue + ' ) / ' + dydxValue );
+            x = x + (targetY - yValue) /dydxValue;
+            console.log(x + '+ (' + targetY + ' - ' + yValue + ' ) / ' + dydxValue );
             iter += 1;
+            // console.log('x',x);
         }
         console.log('x',x);
         console.log('iter',iter);
