@@ -568,6 +568,14 @@ getOuterParencesContent(inputStr) {
         return (Object.keys(listSub).length === 0) ? false : listSub;
     }
 
+    filter_space(input){
+        return input.replace(/\s/g, '');
+    }
+
+    filter_multiply(input){
+        return input.replace(/(\d+(\.\d+)?)\s*\*\s*x/g, "$1x");
+    }
+
     execute(expression) {
             // let inputString = 'sqrt(5)-4x^2t-e^(2x^2+3x+5)-10ln(x^3+5x)+frac{sinx}{cosx}';
         // str = 'logd(10*10)+(sqrt(sqrt4 + 2 * (sin60^2 + cos60^2)))*2';
@@ -576,15 +584,17 @@ getOuterParencesContent(inputStr) {
         // str = 'sqrt(2)';
         // let result = excecute(str);
         // console.log(result);
+        
         let inputString = 'tanx-x^2-5x^3+sqrt(x^0.75-4x^2+4x)-4x^2*a^(x-3)*y^3-e^(2x^2+3x+5)-10ln(x^3+5x)+5frac{x^2}{x^3+5x}-4t+sinx-4cosx';
-        let nospace = expression.replace(/\s/g, '');
-        console.log('inputString',expression);
+        let nospace =  this.filter_space(expression);
+        nospace = this.filter_multiply(nospace);
         // nputString = x^frac{3}{4};
         // inputString = parseFraction(inputString);
         // const separator = /(?=[+-])(?![^{]*})/g;
-        if (expression == null) {
+        if (nospace == null) {
             nospace = inputString;
         }
+        console.log('inputString',nospace);
 
         let resultArray = this.splitStringWithBrackets(nospace);
         resultArray = this.filterConstantTerms(resultArray);
