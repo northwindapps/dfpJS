@@ -12,7 +12,7 @@ class NewtonRapson{
         let iter = 0;
         let isLoop = true;
         let y = fx;
-        //it stinks.check it again.
+        //it can calculate only poly nomials for now.
         //0.005548959*x^5+0.007838187*x^4-0.0171525*x^3-0.099091188*x^2+0.204906823*x+0.256927508
         let dydx = differentiate.execute(fx);
         // dydx = '0.027744795x^4+0.031352748x^3-0.0514575x^2-0.198182376x+0.204906823';
